@@ -1,71 +1,149 @@
-# Mockdeck
+<p align="center">
+  <img src="./assets/mockdeck-hero.svg" alt="Mockdeck — an ASCII interface exploration studio inside Pi" width="100%" />
+</p>
 
-A safe, theme-aware ASCII UI mockup studio for [Pi](https://github.com/badlogic/pi-mono). Generate several interface concepts with an agent, browse them instantly in a keyboard-driven TUI, and send the selected direction back into your implementation workflow.
+<h1 align="center">Mockdeck</h1>
+
+<p align="center">
+  Explore interface directions with your coding agent, compare them in a fast terminal gallery, and carry the selected concept directly into implementation.
+</p>
+
+<p align="center">
+  <strong>ASCII-native</strong> · <strong>keyboard-first</strong> · <strong>theme-aware</strong> · <strong>safe by design</strong>
+</p>
+
+## What is Mockdeck?
+
+Mockdeck is a UI ideation extension and skill for [Pi](https://github.com/earendil-works/pi). It turns a short product brief into several structurally different ASCII interface concepts, then opens them in a responsive, colorized TUI gallery.
+
+Instead of discussing layouts abstractly—or implementing the first idea too early—you can inspect multiple directions, read their trade-offs, export them, and place the chosen concept back into Pi's editor as an implementation prompt.
 
 ```text
-╭─ MOCKDECK ─────────────────────────────────────────────────────────╮
-│ [Gallery]  Preview  Notes                              4 concepts │
-├──────────────────────┬─────────────────────────────────────────────┤
-│  01 Calm dashboard  │  ╭───────────────────────────────────────╮ │
-│ ▶02 Dense dashboard │  │ [accent]Energy overview[/]            │ │
-│  03 Mobile cards    │  │  1,240 customers   72 overdue         │ │
-│                     │  ╰───────────────────────────────────────╯ │
-╰──────────────────────┴─────────────────────────────────────────────╯
+brief → agent explores → concepts are validated → gallery → selection → implementation
 ```
 
-## Features
+Mockdeck is useful for:
 
-- `/mockup <brief>` generates multiple structurally distinct concepts.
-- `/mockups` opens the gallery.
-- Semantic, Pi-theme-aware colors without accepting unsafe raw ANSI.
-- Gallery, full preview, and design-notes views.
-- Copy, delete, Markdown export, and “use this concept” actions.
-- Atomic project-local persistence and indexed O(1) artifact lookup.
-- Responsive narrow-terminal fallback.
-- Bundled `ascii-ui-design` skill.
+- Dashboard and admin-panel exploration
+- CLI and terminal application design
+- Desktop, tablet, and mobile layout planning
+- Comparing information hierarchies before coding
+- Reviewing a proposed redesign with a team
+- Giving an agent a concrete visual target
 
-## Install
+## How it works
 
-From a local checkout:
+Mockdeck combines two Pi resources:
+
+1. **`ascii-ui-design` skill** — guides the agent to produce meaningful alternatives rather than cosmetic variations.
+2. **Mockdeck extension** — validates, stores, colors, renders, browses, exports, and hands off those concepts.
+
+The model never emits executable terminal styling. It publishes semantic color tags through the `mockdeck_publish` tool, and the extension maps those tags to the active Pi theme.
+
+## Installation
+
+### GitHub
 
 ```bash
+pi install git:github.com/1y33/pi-mockdeck
+```
+
+### Local checkout
+
+```bash
+git clone https://github.com/1y33/pi-mockdeck.git
 pi install /absolute/path/to/pi-mockdeck
 ```
 
-After publishing:
-
-```bash
-pi install git:github.com/OWNER/pi-mockdeck
-# or
-pi install npm:pi-mockdeck
-```
-
-For one run:
+To try the extension without installing it:
 
 ```bash
 pi -e ./extensions/index.ts
 ```
 
-## Usage
+## Quick start
+
+Ask Mockdeck to explore a product idea:
 
 ```text
-/mockup Design three alternatives for a supplier billing dashboard
+/mockup Design four alternatives for a supplier billing dashboard.
+```
+
+The agent creates distinct concepts and publishes each one. When generation finishes, the gallery opens automatically.
+
+Open the gallery again at any time:
+
+```text
 /mockups
 ```
 
-Gallery keys:
+Select a concept and press <kbd>Enter</kbd> or <kbd>u</kbd>. Mockdeck places an implementation-ready prompt in Pi's editor; you remain in control of when coding begins.
+
+## Commands
+
+| Command | Purpose |
+|---|---|
+| `/mockup <brief>` | Generate several distinct interface concepts |
+| `/mockups` | Open the saved-concept gallery |
+
+The extension also exposes `mockdeck_publish` to the agent. You normally do not call this tool yourself.
+
+## Gallery controls
 
 | Key | Action |
 |---|---|
-| `↑`/`↓`, `j`/`k`, `←`/`→`, `h`/`l` | Change concept |
-| `Tab` / `Shift+Tab` | Change view |
-| `1`–`9` | Jump to concept |
-| `Enter` or `u` | Put an implementation prompt in the editor |
-| `g` | Generate related concepts |
-| `c` | Copy plain ASCII |
-| `e` | Export Markdown |
-| `d` | Delete after confirmation |
-| `Esc` or `q` | Close |
+| <kbd>↑</kbd>/<kbd>↓</kbd>, <kbd>j</kbd>/<kbd>k</kbd> | Select a concept |
+| <kbd>←</kbd>/<kbd>→</kbd>, <kbd>h</kbd>/<kbd>l</kbd> | Move between concepts |
+| <kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd> | Switch Gallery, Preview, and Notes |
+| <kbd>1</kbd>–<kbd>9</kbd> | Jump directly to a concept |
+| <kbd>Enter</kbd> or <kbd>u</kbd> | Use the selected concept |
+| <kbd>g</kbd> | Generate related concepts |
+| <kbd>c</kbd> | Copy plain ASCII to the clipboard |
+| <kbd>e</kbd> | Export the concept as Markdown |
+| <kbd>d</kbd> | Delete after confirmation |
+| <kbd>Esc</kbd> or <kbd>q</kbd> | Close Mockdeck |
+
+## Why ASCII?
+
+ASCII mockups are lightweight design artifacts that both humans and agents can understand. They are fast to generate, easy to copy, diffable in Git, searchable, and independent of browser tooling.
+
+Mockdeck supports Unicode box-drawing and block characters while retaining plain-text exports. Terminal cells—not pixels—remain the source medium.
+
+## Color and geometry safety
+
+Generated content cannot inject raw ANSI, OSC, C0, or other terminal control sequences. Mockdeck accepts only a restricted semantic vocabulary:
+
+```text
+[accent]Selected tab[/]  [success]● Healthy[/]  [warning]3 overdue[/]
+```
+
+Available tones:
+
+`text` · `muted` · `dim` · `accent` · `success` · `warning` · `error` · `info`
+
+Before publication, Mockdeck also validates:
+
+- Canvas and viewport limits
+- Balanced semantic color tags
+- Consistent outer dimensions
+- Connected vertical and nested box borders
+
+Malformed new concepts are rejected with an exact row and column so the agent can correct them. Invalid legacy artifacts display a diagnostic rather than corrupting the gallery.
+
+## Persistence and exports
+
+By default, project artifacts live under:
+
+```text
+.pi/mockdeck/
+├── index.json
+├── artifacts/
+│   └── <artifact-id>.json
+└── exports/
+    └── <concept-name>.md
+```
+
+Artifact JSON is the source of truth. Gallery output and Markdown exports are derived from it. Writes are atomic, and the index can be rebuilt from artifact files after corruption or interruption.
 
 ## Configuration
 
@@ -89,39 +167,45 @@ Project values override global values:
 }
 ```
 
-Relative storage paths resolve from the active project's root. Artifacts are JSON source documents under `<storageDir>/artifacts`; Markdown exports go under `<storageDir>/exports`. Set `solidBackground` to `false` only when terminal transparency behind the gallery is desired.
+Relative storage paths resolve from the active project. Keep `solidBackground` enabled for readable galleries in transparent terminals such as Ghostty. Set `strictBoxGeometry` to `false` only when intentionally creating disconnected box-drawing art.
 
-## Color markup
+## Terminal support
 
-Models publish semantic tags rather than terminal escapes:
+Mockdeck uses Pi's TUI and works in ordinary modern terminals. Ghostty is an excellent fit thanks to truecolor, Unicode rendering, and Kitty keyboard protocol support, but no Ghostty-specific dependency is required.
+
+Narrow terminals automatically switch from split gallery mode to a focused preview.
+
+## Project structure
 
 ```text
-[accent]Selected tab[/]  [success]● Healthy[/]  [warning]3 overdue[/]
+extensions/index.ts                 Pi commands, tool, and lifecycle wiring
+skills/ascii-ui-design/SKILL.md    Agent design workflow
+src/gallery.ts                     Keyboard-driven TUI
+src/artifact.ts                    Validation and normalization
+src/geometry.ts                    Box-topology validation
+src/store.ts                       Atomic persistence and exports
 ```
 
-Supported tones: `text`, `muted`, `dim`, `accent`, `success`, `warning`, `error`, and `info`. Raw terminal control characters are stripped before persistence and rendering. With `strictBoxGeometry` enabled, disconnected vertical borders are rejected before publication; legacy invalid artifacts render as a diagnostic instead of a broken canvas.
-
 ## Development
+
+Requirements: Node.js 22.19+ and Pi 0.85.1+.
 
 ```bash
 npm install
 npm run verify
+npm pack --dry-run
 ```
 
-The package targets Node.js 22.19+ and Pi 0.85.1+.
+The test suite covers semantic markup security, Unicode widths, box topology, responsive rendering, public extension registration, persistence, recovery, and exports.
 
-## Publishing checklist
+## Contributing
 
-1. Replace the placeholder repository owner in `package.json`.
-2. Add a screenshot or MP4 under the package's `pi.image` or `pi.video` metadata.
-3. Run `npm run verify` and `npm pack --dry-run`.
-4. Create a GitHub repository and push a tagged release.
-5. Optionally publish the same package to npm.
+Issues and pull requests are welcome. Please include a regression test for behavior changes and run `npm run verify` before submitting.
 
 ## Security
 
-Pi extensions execute with the user's full permissions. Mockdeck never executes generated mockup content. It strips terminal control characters, recognizes only a small semantic color vocabulary, validates dimensions, and writes artifacts beneath a configurable storage directory.
+Pi packages run with the user's full system permissions. Review third-party extensions before installing them. Mockdeck never executes generated mockup content and writes only to its configured storage directory.
 
 ## License
 
-MIT
+[MIT](./LICENSE)

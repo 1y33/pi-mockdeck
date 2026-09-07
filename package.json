@@ -5,7 +5,10 @@
   "type": "module",
   "keywords": ["pi-package", "pi", "ascii", "wireframe", "mockup", "tui"],
   "license": "MIT",
-  "files": ["extensions", "src", "skills", "README.md", "CHANGELOG.md", "LICENSE"],
+  "repository": { "type": "git", "url": "git+https://github.com/1y33/pi-mockdeck.git" },
+  "homepage": "https://github.com/1y33/pi-mockdeck#readme",
+  "bugs": { "url": "https://github.com/1y33/pi-mockdeck/issues" },
+  "files": ["extensions", "src", "skills", "assets", "README.md", "CHANGELOG.md", "LICENSE"],
   "scripts": {
     "check": "tsc --noEmit",
     "test": "tsx --test test/*.test.ts",
@@ -15,7 +18,8 @@
   "engines": { "node": ">=22.19.0" },
   "pi": {
     "extensions": ["./extensions/index.ts"],
-    "skills": ["./skills"]
+    "skills": ["./skills"],
+    "image": "https://raw.githubusercontent.com/1y33/pi-mockdeck/main/assets/mockdeck-hero.png"
   },
   "peerDependencies": {
     "@earendil-works/pi-coding-agent": "*",
