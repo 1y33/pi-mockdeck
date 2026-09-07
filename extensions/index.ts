@@ -117,7 +117,7 @@ export default function mockdeck(pi: ExtensionAPI) {
   pi.registerTool({
     name: "mockdeck_publish",
     label: "Publish mockup",
-    description: "Validate and publish one ASCII UI concept to the Mockdeck gallery. Raw ANSI is forbidden; use semantic tags: [accent], [success], [warning], [error], [info], [muted], [dim], and [/].",
+    description: "Validate and publish one ASCII UI concept to the Mockdeck gallery. Disconnected box geometry is rejected. Raw ANSI is forbidden; use semantic tags: [accent], [success], [warning], [error], [info], [muted], [dim], and [/].",
     parameters: PublishParams,
     executionMode: "sequential",
     async execute(_toolCallId, params, _signal, _onUpdate, ctx) {

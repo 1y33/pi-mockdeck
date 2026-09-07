@@ -20,4 +20,8 @@ describe("createArtifact", () => {
   it("rejects empty canvases", () => {
     assert.throws(() => createArtifact({ title: "Empty", canvas: [] }, DEFAULT_CONFIG), /at least one line/);
   });
+
+  it("rejects disconnected generated box geometry", () => {
+    assert.throws(() => createArtifact({ title: "Broken", canvas: ["┌────┐", " │ x │", "└────┘"] }, DEFAULT_CONFIG), /disconnected box edge/);
+  });
 });

@@ -7,6 +7,7 @@ All notable changes to Mockdeck are documented here.
 - Align ragged generated canvas borders at publication and rendering time.
 - Render the gallery on an opaque theme surface for readable Ghostty transparency.
 - Highlight the selected concept with the active Pi theme background.
+- Reject disconnected nested box borders and fail safely for malformed legacy artifacts.
 
 ## 0.1.0 - 2026-09-07
 

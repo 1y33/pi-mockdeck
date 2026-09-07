@@ -1,6 +1,7 @@
 import type { Theme } from "@earendil-works/pi-coding-agent";
 import { matchesKey, truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
 import { normalizeCanvas } from "./canvas.js";
+import { inspectBoxGeometry } from "./geometry.js";
 import { renderMarkup } from "./markup.js";
 import type { MockupArtifact } from "./types.js";
 
@@ -108,13 +109,25 @@ export class GalleryComponent {
       const content = fit(`${prefix}${label}`, sidebarWidth);
       return index === this.selected ? this.theme.bg("selectedBg", content) : content;
     });
-    const canvas = [this.theme.fg("accent", this.theme.bold(` ${selected.title}`)), this.theme.fg("dim", ` ${selected.variant} · ${selected.viewport.width}×${selected.viewport.height}`), "", ...normalizeCanvas(selected.canvas).map((line) => renderMarkup(line, this.theme))];
+    const canvas = [this.theme.fg("accent", this.theme.bold(` ${selected.title}`)), this.theme.fg("dim", ` ${selected.variant} · ${selected.viewport.width}×${selected.viewport.height}`), "", ...this.canvasLines(selected)];
     const count = Math.max(list.length, canvas.length, 4);
     return Array.from({ length: count }, (_, index) => this.row(`${list[index] ?? " ".repeat(sidebarWidth)}${this.theme.fg("borderMuted", "│")}${fit(canvas[index] ?? "", previewWidth)}`, width));
   }
   private preview(selected: MockupArtifact, width: number): string[] {
-    return [this.row(` ${this.theme.fg("accent", this.theme.bold(selected.title))}`, width), this.row(` ${this.theme.fg("dim", `${selected.variant} · target ${selected.viewport.width}×${selected.viewport.height}`)}`, width), this.row("", width), ...normalizeCanvas(selected.canvas).map((line) => this.row(` ${renderMarkup(line, this.theme)}`, width))];
+    return [this.row(` ${this.theme.fg("accent", this.theme.bold(selected.title))}`, width), this.row(` ${this.theme.fg("dim", `${selected.variant} · target ${selected.viewport.width}×${selected.viewport.height}`)}`, width), this.row("", width), ...this.canvasLines(selected).map((line) => this.row(` ${line}`, width))];
   }
+  private canvasLines(selected: MockupArtifact): string[] {
+    const normalized = normalizeCanvas(selected.canvas);
+    const issues = inspectBoxGeometry(normalized);
+    if (!issues.length) return normalized.map((line) => renderMarkup(line, this.theme));
+    const first = issues[0]!;
+    return [
+      this.theme.fg("warning", "⚠ Invalid box geometry in this legacy mockup"),
+      this.theme.fg("muted", `Disconnected ${first.direction} edge at row ${first.row}, column ${first.column}.`),
+      this.theme.fg("dim", "Press G to regenerate it; new malformed mockups are rejected automatically."),
+    ];
+  }
+
   private notes(selected: MockupArtifact, width: number): string[] {
     const tags = selected.tags.length ? selected.tags.map((tag) => this.theme.fg("accent", `#${tag}`)).join(" ") : this.theme.fg("dim", "No tags");
     const notes = selected.notes.length ? selected.notes.map((note) => this.row(` • ${note}`, width)) : [this.row(` ${this.theme.fg("dim", "No design notes")}`, width)];

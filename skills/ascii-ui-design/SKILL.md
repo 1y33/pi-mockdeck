@@ -54,3 +54,4 @@ Before publishing each concept, mechanically check:
 - Primary action, current location, and major status are obvious.
 - Notes describe trade-offs rather than restating the canvas.
 - `title`, `variant`, `viewport`, `canvas`, `notes`, and useful `tags` are supplied.
+- If `mockdeck_publish` reports disconnected box geometry, correct the indicated row and column, then publish that concept again.

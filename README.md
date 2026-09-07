@@ -80,6 +80,7 @@ Project values override global values:
   "storageDir": ".pi/mockdeck",
   "autoOpenAfterGeneration": true,
   "solidBackground": true,
+  "strictBoxGeometry": true,
   "defaultVariantCount": 4,
   "defaultViewport": { "width": 100, "height": 30 },
   "maxArtifacts": 500,
@@ -98,7 +99,7 @@ Models publish semantic tags rather than terminal escapes:
 [accent]Selected tab[/]  [success]● Healthy[/]  [warning]3 overdue[/]
 ```
 
-Supported tones: `text`, `muted`, `dim`, `accent`, `success`, `warning`, `error`, and `info`. Raw terminal control characters are stripped before persistence and rendering.
+Supported tones: `text`, `muted`, `dim`, `accent`, `success`, `warning`, `error`, and `info`. Raw terminal control characters are stripped before persistence and rendering. With `strictBoxGeometry` enabled, disconnected vertical borders are rejected before publication; legacy invalid artifacts render as a diagnostic instead of a broken canvas.
 
 ## Development
 

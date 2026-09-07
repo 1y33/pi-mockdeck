@@ -25,6 +25,12 @@ describe("GalleryComponent", () => {
     }
   });
 
+  it("replaces malformed legacy canvases with a diagnostic", () => {
+    const legacy = { ...artifacts[0]!, canvas: ["┌────┐", " │ x │", "└────┘"] };
+    const gallery = new GalleryComponent([legacy], theme, () => {}, () => {});
+    assert.ok(gallery.render(100).join("\n").includes("Invalid box geometry"));
+  });
+
   it("navigates concepts and emits the selected action", () => {
     let action: GalleryAction | undefined;
     const gallery = new GalleryComponent(artifacts, theme, () => {}, (value) => { action = value; });
