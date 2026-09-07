@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { normalizeCanvas } from "./canvas.js";
 import type { MockdeckConfig } from "./config.js";
 import { markupWidth, sanitizeLine, validateMarkup } from "./markup.js";
 import { MOCKUP_SCHEMA_VERSION, type MockupArtifact, type MockupInput } from "./types.js";
@@ -38,7 +39,7 @@ export function createArtifact(input: MockupInput, config: MockdeckConfig, now =
     brief: cleanText(input.brief, "", 1_000),
     variant: cleanText(input.variant, "Concept", 80),
     viewport,
-    canvas,
+    canvas: normalizeCanvas(canvas),
     notes: cleanList(input.notes, 30, 500),
     tags: [...new Set(cleanList(input.tags, 20, 40).map((tag) => tag.toLowerCase()))],
     createdAt: now.toISOString(),

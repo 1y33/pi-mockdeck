@@ -8,6 +8,7 @@ import { GalleryComponent, type GalleryAction } from "../src/gallery.js";
 
 const theme = {
   fg: (_color: string, value: string) => value,
+  bg: (_color: string, value: string) => value,
   bold: (value: string) => value,
 } as Theme;
 

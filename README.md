@@ -79,6 +79,7 @@ Project values override global values:
 {
   "storageDir": ".pi/mockdeck",
   "autoOpenAfterGeneration": true,
+  "solidBackground": true,
   "defaultVariantCount": 4,
   "defaultViewport": { "width": 100, "height": 30 },
   "maxArtifacts": 500,
@@ -87,7 +88,7 @@ Project values override global values:
 }
 ```
 
-Relative storage paths resolve from the active project's root. Artifacts are JSON source documents under `<storageDir>/artifacts`; Markdown exports go under `<storageDir>/exports`.
+Relative storage paths resolve from the active project's root. Artifacts are JSON source documents under `<storageDir>/artifacts`; Markdown exports go under `<storageDir>/exports`. Set `solidBackground` to `false` only when terminal transparency behind the gallery is desired.
 
 ## Color markup
 

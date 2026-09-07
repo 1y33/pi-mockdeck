@@ -48,7 +48,7 @@ export default function mockdeck(pi: ExtensionAPI) {
         const current = await getRuntime(ctx.cwd);
         const artifacts = await current.store.all();
         const action = await ctx.ui.custom<GalleryAction>((tui, theme, _keys, done) =>
-          new GalleryComponent(artifacts, theme, () => tui.requestRender(), done));
+          new GalleryComponent(artifacts, theme, () => tui.requestRender(), done, current.config.solidBackground));
         if (!action || action.type === "close") break;
         keepOpen = await handleAction(action, current, ctx);
       }

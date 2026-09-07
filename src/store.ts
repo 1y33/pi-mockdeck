@@ -1,5 +1,6 @@
 import { mkdir, readFile, readdir, rename, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { normalizeCanvas } from "./canvas.js";
 import { stripMarkup } from "./markup.js";
 import type { ArtifactSummary, MockupArtifact } from "./types.js";
 
@@ -74,7 +75,7 @@ export class ArtifactStore {
     await mkdir(exportsDir, { recursive: true });
     const slug = artifact.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "mockup";
     const path = join(exportsDir, `${slug}-${artifact.id.slice(0, 8)}.md`);
-    const body = [`# ${artifact.title}`, "", `Variant: ${artifact.variant}`, `Viewport: ${artifact.viewport.width}×${artifact.viewport.height}`, "", "```text", ...artifact.canvas.map(stripMarkup), "```", "", ...artifact.notes.map((note) => `- ${note}`), ""].join("\n");
+    const body = [`# ${artifact.title}`, "", `Variant: ${artifact.variant}`, `Viewport: ${artifact.viewport.width}×${artifact.viewport.height}`, "", "```text", ...normalizeCanvas(artifact.canvas).map(stripMarkup), "```", "", ...artifact.notes.map((note) => `- ${note}`), ""].join("\n");
     await writeFile(path, body, "utf8");
     return path;
   }

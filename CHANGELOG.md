@@ -2,6 +2,12 @@
 
 All notable changes to Mockdeck are documented here.
 
+## Unreleased
+
+- Align ragged generated canvas borders at publication and rendering time.
+- Render the gallery on an opaque theme surface for readable Ghostty transparency.
+- Highlight the selected concept with the active Pi theme background.
+
 ## 0.1.0 - 2026-09-07
 
 - Add the `mockdeck_publish` agent tool with semantic color markup and terminal-control sanitization.

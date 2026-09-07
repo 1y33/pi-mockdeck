@@ -5,6 +5,7 @@ import { isAbsolute, resolve } from "node:path";
 export interface MockdeckConfig {
   storageDir: string;
   autoOpenAfterGeneration: boolean;
+  solidBackground: boolean;
   defaultVariantCount: number;
   defaultViewport: { width: number; height: number };
   maxArtifacts: number;
@@ -15,6 +16,7 @@ export interface MockdeckConfig {
 export const DEFAULT_CONFIG: MockdeckConfig = {
   storageDir: ".pi/mockdeck",
   autoOpenAfterGeneration: true,
+  solidBackground: true,
   defaultVariantCount: 4,
   defaultViewport: { width: 100, height: 30 },
   maxArtifacts: 500,
@@ -50,6 +52,7 @@ export function loadConfig(cwd: string): MockdeckConfig {
   return {
     storageDir: isAbsolute(storageDir) ? storageDir : resolve(cwd, storageDir),
     autoOpenAfterGeneration: merged.autoOpenAfterGeneration !== false,
+    solidBackground: merged.solidBackground !== false,
     defaultVariantCount: positiveInteger(merged.defaultVariantCount, DEFAULT_CONFIG.defaultVariantCount, 12),
     defaultViewport: {
       width: positiveInteger(viewport.width, DEFAULT_CONFIG.defaultViewport.width, 500),
