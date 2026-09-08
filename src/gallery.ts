@@ -7,6 +7,7 @@ import type { MockupArtifact } from "./types.js";
 
 export type GalleryAction =
   | { type: "close" }
+  | { type: "move"; artifact: MockupArtifact }
   | { type: "copy"; artifact: MockupArtifact }
   | { type: "delete"; artifact: MockupArtifact }
   | { type: "export"; artifact: MockupArtifact }
@@ -24,6 +25,7 @@ function fit(value: string, width: number): string {
 
 export class GalleryComponent {
   private selected = 0;
+  private readonly collapsed = new Set<string>();
   private viewIndex = 0;
   private cachedWidth: number | undefined;
   private cachedLines: string[] | undefined;
@@ -42,16 +44,20 @@ export class GalleryComponent {
     else if (matchesKey(data, "shift+tab")) this.viewIndex = (this.viewIndex + VIEWS.length - 1) % VIEWS.length;
     else if (matchesKey(data, "up") || data === "k") this.move(-1);
     else if (matchesKey(data, "down") || data === "j") this.move(1);
-    else if (matchesKey(data, "left") || data === "h") this.move(-1);
-    else if (matchesKey(data, "right") || data === "l") this.move(1);
-    else if (/^[1-9]$/.test(data)) this.selected = Math.min(Number(data) - 1, Math.max(0, this.artifacts.length - 1));
+    else if (matchesKey(data, "left") || data === "h") this.branch(false);
+    else if (matchesKey(data, "right") || data === "l") this.branch(true);
+    else if (/^[1-9]$/.test(data)) this.selected = Math.min(Number(data) - 1, Math.max(0, this.entries().length - 1));
     else if (data === "g") {
       const artifact = this.current();
       return this.done(artifact ? { type: "generate", artifact } : { type: "generate" });
     }
     else {
       const artifact = this.current();
-      if (!artifact) return;
+      if (!artifact) {
+        if (matchesKey(data, "return")) { this.branch(this.collapsed.has(this.entries()[this.selected]?.path ?? "")); this.invalidate(); this.requestRender(); }
+        return;
+      }
+      if (data === "m") return this.done({ type: "move", artifact });
       if (data === "c") return this.done({ type: "copy", artifact });
       if (data === "d") return this.done({ type: "delete", artifact });
       if (data === "e") return this.done({ type: "export", artifact });
@@ -73,12 +79,12 @@ export class GalleryComponent {
     const count = this.theme.fg("dim", `${this.artifacts.length} concept${this.artifacts.length === 1 ? "" : "s"}`);
     const header = fit(` ${this.theme.fg("accent", this.theme.bold("MOCKDECK"))}  ${tabs}`, Math.max(1, bodyWidth - visibleWidth(count) - 1)) + count;
     const lines = [this.frame(`╭${"─".repeat(bodyWidth)}╮`), this.row(header, bodyWidth), this.frame(`├${"─".repeat(bodyWidth)}┤`)];
-    if (!selected) lines.push(...this.empty(bodyWidth));
-    else if (VIEWS[this.viewIndex] === "gallery") lines.push(...this.gallery(selected, bodyWidth));
+    if (!this.artifacts.length) lines.push(...this.empty(bodyWidth));
+    else if (VIEWS[this.viewIndex] === "gallery" || !selected) lines.push(...this.gallery(selected, bodyWidth));
     else if (VIEWS[this.viewIndex] === "preview") lines.push(...this.preview(selected, bodyWidth));
     else lines.push(...this.notes(selected, bodyWidth));
     lines.push(this.frame(`├${"─".repeat(bodyWidth)}┤`));
-    lines.push(this.row(` ${this.theme.fg("dim", "↑↓ select  Tab view  G generate  U use  C copy  E export  D delete  Esc close")}`, bodyWidth));
+    lines.push(this.row(` ${this.theme.fg("dim", "↑↓ select  ←→ folders  Tab view  M move  G generate  U use  C copy  E export  D delete  Esc close")}`, bodyWidth));
     lines.push(this.frame(`╰${"─".repeat(bodyWidth)}╯`));
     this.cachedWidth = width;
     this.cachedLines = lines;
@@ -87,10 +93,48 @@ export class GalleryComponent {
 
   invalidate(): void { this.cachedWidth = undefined; this.cachedLines = undefined; }
 
-  private current(): MockupArtifact | undefined { return this.artifacts[this.selected]; }
+  private entries(): { path: string; label: string; depth: number; artifact?: MockupArtifact }[] {
+    type Folder = { folders: Map<string, Folder>; artifacts: MockupArtifact[] };
+    const root: Folder = { folders: new Map(), artifacts: [] };
+    for (const artifact of this.artifacts) {
+      let node = root;
+      for (const part of (artifact.folder || "").split("/").filter(Boolean)) {
+        if (!node.folders.has(part)) node.folders.set(part, { folders: new Map(), artifacts: [] });
+        node = node.folders.get(part)!;
+      }
+      node.artifacts.push(artifact);
+    }
+    const rows: { path: string; label: string; depth: number; artifact?: MockupArtifact }[] = [];
+    const walk = (node: Folder, parent: string, depth: number): void => {
+      for (const [label, child] of node.folders) {
+        const path = parent ? `${parent}/${label}` : label;
+        rows.push({ path, label, depth });
+        if (!this.collapsed.has(path)) walk(child, path, depth + 1);
+      }
+      for (const artifact of node.artifacts) rows.push({ path: parent, label: artifact.title, depth, artifact });
+    };
+    walk(root, "", 0);
+    return rows;
+  }
+  private current(): MockupArtifact | undefined { return this.entries()[this.selected]?.artifact; }
   private move(delta: number): void {
-    if (!this.artifacts.length) return;
-    this.selected = (this.selected + delta + this.artifacts.length) % this.artifacts.length;
+    const length = this.entries().length;
+    if (length) this.selected = (this.selected + delta + length) % length;
+  }
+  private branch(expand: boolean): void {
+    const rows = this.entries();
+    const entry = rows[this.selected];
+    if (!entry) return;
+    if (!entry.artifact && (expand || !this.collapsed.has(entry.path))) {
+      if (expand) {
+        if (this.collapsed.has(entry.path)) this.collapsed.delete(entry.path);
+        else if (rows[this.selected + 1]?.depth === entry.depth + 1) this.selected++;
+      } else this.collapsed.add(entry.path);
+    } else if (!expand) {
+      for (let i = this.selected - 1; i >= 0; i--) {
+        if (rows[i]!.depth < entry.depth) { this.selected = i; break; }
+      }
+    }
   }
   private label(view: View): string { return view[0]!.toUpperCase() + view.slice(1); }
   private surface(content: string): string { return this.solidBackground ? this.theme.bg("customMessageBg", content) : content; }
@@ -99,17 +143,18 @@ export class GalleryComponent {
   private empty(width: number): string[] {
     return [this.row("", width), this.row(`  ${this.theme.fg("muted", "No mockups yet. Press G or run /mockup <brief>.")}`, width), this.row("", width)];
   }
-  private gallery(selected: MockupArtifact, width: number): string[] {
-    if (width < 78) return this.preview(selected, width);
+  private gallery(selected: MockupArtifact | undefined, width: number): string[] {
     const sidebarWidth = Math.min(30, Math.max(22, Math.floor(width * 0.26)));
     const previewWidth = width - sidebarWidth - 1;
-    const list = this.artifacts.map((artifact, index) => {
+    const list = this.entries().map((entry, index) => {
+      const title = `${"  ".repeat(entry.depth)}${entry.artifact ? "· " : this.collapsed.has(entry.path) ? "▸ " : "▾ "}${entry.label}${entry.artifact ? "" : "/"}`;
       const prefix = index === this.selected ? this.theme.fg("accent", " ▶ ") : "   ";
-      const label = index === this.selected ? this.theme.fg("accent", artifact.title) : artifact.title;
-      const content = fit(`${prefix}${label}`, sidebarWidth);
+      const label = index === this.selected ? this.theme.fg("accent", title) : title;
+      const content = fit(`${prefix}${label}`, width < 78 ? width : sidebarWidth);
       return index === this.selected ? this.theme.bg("selectedBg", content) : content;
     });
-    const canvas = [this.theme.fg("accent", this.theme.bold(` ${selected.title}`)), this.theme.fg("dim", ` ${selected.variant} · ${selected.viewport.width}×${selected.viewport.height}`), "", ...this.canvasLines(selected)];
+    if (width < 78) return [...list.map((line) => this.row(line, width)), this.row("", width), ...(selected ? this.preview(selected, width) : [])];
+    const canvas = selected ? [this.theme.fg("accent", this.theme.bold(` ${selected.title}`)), this.theme.fg("dim", ` ${selected.variant} · ${selected.viewport.width}×${selected.viewport.height}`), "", ...this.canvasLines(selected)] : [this.theme.fg("accent", ` ${this.entries()[this.selected]?.path ?? ""}/`), "", " Select a mockup or expand a folder."];
     const count = Math.max(list.length, canvas.length, 4);
     return Array.from({ length: count }, (_, index) => this.row(`${list[index] ?? " ".repeat(sidebarWidth)}${this.theme.fg("borderMuted", "│")}${fit(canvas[index] ?? "", previewWidth)}`, width));
   }

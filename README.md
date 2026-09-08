@@ -93,15 +93,22 @@ The extension also exposes `mockdeck_publish` to the agent. You normally do not 
 | Key | Action |
 |---|---|
 | <kbd>↑</kbd>/<kbd>↓</kbd>, <kbd>j</kbd>/<kbd>k</kbd> | Select a concept |
-| <kbd>←</kbd>/<kbd>→</kbd>, <kbd>h</kbd>/<kbd>l</kbd> | Move between concepts |
+| <kbd>←</kbd>/<kbd>→</kbd>, <kbd>h</kbd>/<kbd>l</kbd> | Collapse/expand folders or navigate to parent/child |
 | <kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd> | Switch Gallery, Preview, and Notes |
-| <kbd>1</kbd>–<kbd>9</kbd> | Jump directly to a concept |
+| <kbd>1</kbd>–<kbd>9</kbd> | Jump to a visible tree row |
 | <kbd>Enter</kbd> or <kbd>u</kbd> | Use the selected concept |
+| <kbd>m</kbd> | Move selected mockup to a folder path (blank for root) |
 | <kbd>g</kbd> | Generate related concepts |
 | <kbd>c</kbd> | Copy plain ASCII to the clipboard |
 | <kbd>e</kbd> | Export the concept as Markdown |
 | <kbd>d</kbd> | Delete after confirmation |
 | <kbd>Esc</kbd> or <kbd>q</kbd> | Close Mockdeck |
+
+## Folder hierarchy
+
+The gallery groups mockups into expandable nested folders. Press **M** on a mockup and enter a path such as `Dashboard/Mobile`; missing folders appear automatically. Leave the path blank to move it to the root. **Enter** toggles a selected folder; **←/→** collapse/expand it or navigate to its parent/child.
+
+Agents can publish directly into a hierarchy with `folder: "Dashboard/Mobile"` in `mockdeck_publish`. Existing artifacts without a folder remain at the root. Folders are logical groups stored in artifact metadata, not filesystem directories; empty folders disappear when their last mockup is moved or deleted.
 
 ## Why ASCII?
 
@@ -173,7 +180,7 @@ Relative storage paths resolve from the active project. Keep `solidBackground` e
 
 Mockdeck uses Pi's TUI and works in ordinary modern terminals. Ghostty is an excellent fit thanks to truecolor, Unicode rendering, and Kitty keyboard protocol support, but no Ghostty-specific dependency is required.
 
-Narrow terminals automatically switch from split gallery mode to a focused preview.
+Narrow terminals stack the folder tree above the selected preview. Use the Preview tab for a focused canvas.
 
 ## Project structure
 

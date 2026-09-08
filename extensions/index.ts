@@ -2,7 +2,7 @@ import type { ExtensionAPI, ExtensionContext, Theme } from "@earendil-works/pi-c
 import { copyToClipboard } from "@earendil-works/pi-coding-agent";
 import { Text } from "@earendil-works/pi-tui";
 import { Type } from "typebox";
-import { createArtifact } from "../src/artifact.js";
+import { createArtifact, normalizeFolder } from "../src/artifact.js";
 import { loadConfig, type MockdeckConfig } from "../src/config.js";
 import { GalleryComponent, type GalleryAction } from "../src/gallery.js";
 import { stripMarkup } from "../src/markup.js";
@@ -12,6 +12,7 @@ import type { MockupArtifact, MockupInput } from "../src/types.js";
 
 const PublishParams = Type.Object({
   title: Type.String({ description: "Short concept title" }),
+  folder: Type.Optional(Type.String({ description: "Slash-separated folder hierarchy, e.g. Dashboard/Mobile; omit for root" })),
   brief: Type.Optional(Type.String({ description: "Original design brief" })),
   variant: Type.Optional(Type.String({ description: "What makes this concept distinct" })),
   viewport: Type.Optional(Type.Object({
@@ -57,6 +58,15 @@ export default function mockdeck(pi: ExtensionAPI) {
 
   async function handleAction(action: GalleryAction, current: Runtime, ctx: ExtensionContext): Promise<boolean> {
     switch (action.type) {
+      case "move": {
+        const folder = await ctx.ui.editor("Move mockup — folder path (blank for root)", action.artifact.folder || "");
+        if (folder !== undefined) {
+          try {
+            await current.store.save({ ...action.artifact, folder: normalizeFolder(folder) });
+          } catch (error) { ctx.ui.notify(String(error), "error"); }
+        }
+        return true;
+      }
       case "copy":
         await copyToClipboard(action.artifact.canvas.map(stripMarkup).join("\n"));
         ctx.ui.notify("Mockup copied", "info");

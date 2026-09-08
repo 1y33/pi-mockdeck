@@ -32,6 +32,24 @@ describe("ArtifactStore", () => {
     assert.deepEqual(value.list(), []);
   });
 
+  it("persists folder moves across reload and index recovery", async () => {
+    const value = await store();
+    const artifact = createArtifact({ title: "Nested", folder: " App / Mobile / ", canvas: ["ok"] }, DEFAULT_CONFIG);
+    await value.save(artifact);
+    const root = roots[roots.length - 1]!;
+    for (const folder of ["App/Mobile", "Other/Desktop", ""]) {
+      await value.save({ ...artifact, folder });
+      const reloaded = new ArtifactStore(root, 10);
+      await reloaded.init();
+      assert.equal((await reloaded.get(artifact.id))?.folder, folder);
+      assert.equal(reloaded.list()[0]?.folder, folder);
+      await rm(join(root, "index.json"));
+      const recovered = new ArtifactStore(root, 10);
+      await recovered.init();
+      assert.equal(recovered.list()[0]?.folder, folder);
+    }
+  });
+
   it("rebuilds an absent index from artifact files", async () => {
     const value = await store();
     const artifact = createArtifact({ title: "Recovered", canvas: ["ok"] }, DEFAULT_CONFIG);

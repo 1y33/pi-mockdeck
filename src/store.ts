@@ -81,7 +81,7 @@ export class ArtifactStore {
   }
 
   private toSummary(artifact: MockupArtifact): ArtifactSummary {
-    return { id: artifact.id, title: artifact.title, variant: artifact.variant, tags: artifact.tags, createdAt: artifact.createdAt };
+    return { id: artifact.id, title: artifact.title, folder: artifact.folder || "", variant: artifact.variant, tags: artifact.tags, createdAt: artifact.createdAt };
   }
 
   private async rebuildIndex(): Promise<void> {

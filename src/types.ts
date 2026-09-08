@@ -12,6 +12,7 @@ export interface MockupArtifact {
   schemaVersion: typeof MOCKUP_SCHEMA_VERSION;
   id: string;
   title: string;
+  folder?: string;
   brief: string;
   variant: string;
   viewport: MockupViewport;
@@ -23,6 +24,7 @@ export interface MockupArtifact {
 
 export interface MockupInput {
   title: string;
+  folder?: string;
   brief?: string;
   variant?: string;
   viewport?: Partial<MockupViewport>;
@@ -34,6 +36,7 @@ export interface MockupInput {
 export interface ArtifactSummary {
   id: string;
   title: string;
+  folder?: string;
   variant: string;
   tags: string[];
   createdAt: string;

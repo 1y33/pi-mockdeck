@@ -11,6 +11,16 @@ function cleanText(value: unknown, fallback: string, maxLength: number): string 
   return clean ? clean.slice(0, maxLength) : fallback;
 }
 
+export function normalizeFolder(value: unknown): string {
+  if (value === undefined || value === "") return "";
+  if (typeof value !== "string") throw new Error("folder must be a string");
+  const parts = sanitizeLine(value).split("/").map((part) => part.trim()).filter(Boolean);
+  if (parts.length > 12 || parts.some((part) => part === "." || part === ".." || part.length > 80)) {
+    throw new Error("folder must have at most 12 levels, with names up to 80 characters (not . or ..)");
+  }
+  return parts.join("/");
+}
+
 function cleanList(value: unknown, maxItems: number, maxLength: number): string[] {
   if (!Array.isArray(value)) return [];
   return value.slice(0, maxItems).map((item) => cleanText(item, "", maxLength)).filter(Boolean);
@@ -39,6 +49,7 @@ export function createArtifact(input: MockupInput, config: MockdeckConfig, now =
     schemaVersion: MOCKUP_SCHEMA_VERSION,
     id: randomUUID(),
     title: cleanText(input.title, "Untitled mockup", 120),
+    folder: normalizeFolder(input.folder),
     brief: cleanText(input.brief, "", 1_000),
     variant: cleanText(input.variant, "Concept", 80),
     viewport,

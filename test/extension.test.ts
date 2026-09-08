@@ -10,7 +10,10 @@ describe("Mockdeck extension registration", () => {
     const events: string[] = [];
     const api = {
       registerCommand: (name: string) => { commands.push(name); },
-      registerTool: (tool: { name: string }) => { tools.push(tool.name); },
+      registerTool: (tool: { name: string; parameters: { properties: Record<string, unknown> } }) => {
+        tools.push(tool.name);
+        assert.ok(tool.parameters.properties.folder, "publish tool exposes folder metadata");
+      },
       on: (event: string) => { events.push(event); },
     } as unknown as ExtensionAPI;
 

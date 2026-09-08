@@ -13,7 +13,7 @@ Create decision-ready interface concepts, not ASCII decoration.
 1. Read the user's brief and the relevant product or UI files when available.
 2. Identify the primary user, task, information hierarchy, target terminal viewport, and important states.
 3. Generate the requested number of concepts. Make each structurally different: hierarchy, navigation, density, or interaction model must change.
-4. Publish each concept separately with `mockdeck_publish`.
+4. Publish each concept separately with `mockdeck_publish`. Use its optional `folder` path (e.g. `Dashboard/Mobile`) to group related concepts into a hierarchy when useful or requested.
 5. Finish with a compact comparison of the concepts and invite the user to browse them with `/mockups`.
 
 Do not implement application code during this workflow unless explicitly asked after a concept is selected.
